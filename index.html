@@ -22,12 +22,14 @@ path {
 
   function renderStream(){
 
-    $("#chart").empty();
+    // Update 0: Make width and height the whole page.
     var width = $(document).width(),
       height = $(document).height();
 
+    // Update Extra-Credit 2: Adjust height of graph if dropdowns and empty page.
     if (Block.vars.csv.columnRoleMap.grafly_dropdowns.length != 0){
         height = height - 50;
+        $("#chart").empty();
       }
 
     // Update 1: Get CSV data from BlockSpring API (vars.csv.data)
@@ -58,6 +60,7 @@ path {
         .domain(d3.extent(csv, function(d){ return d[valueHeader]; }))
         .range([0, height / (2*m)]);
 
+    // Update Extra-Credit 1: Add colors as a variable configuration.
     // set scales for color.
     var color = d3.scale.ordinal()
         .range(Block.vars.colors);
@@ -83,6 +86,7 @@ path {
         .attr("d", area);
 
     function findUniqueSeries(csv){
+        // Get a unique list of series.
         var uniqueSeries = d3.set(csv.map(function(row){
             return row[seriesHeader];
         })).values();
@@ -91,7 +95,6 @@ path {
     }
 
     function transformCSV(csv, uniqueSeries){
-        // Get a unique list of series.
         // Transform csv data into array of arrays.
         var dataObject = {};
         

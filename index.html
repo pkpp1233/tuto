@@ -37,24 +37,12 @@ path {
     var valueHeader = Block.vars.csv.columnRoleMap.value[0];
     var seriesHeader = Block.vars.csv.columnRoleMap.series;
 
-    // Get a unique list of series.
-    var uniqueSeries = d3.set(csv.map(function(row){
-        return row[seriesHeader];
-    })).values();
+    // Get unique list of series
+    var uniqueSeries = findUniqueSeries(csv);
     var m = uniqueSeries.length; // number of series
-
-    // Transform csv data into array of arrays.
-    var dataObject = {};
     
-    uniqueSeries.forEach(function(series){
-      dataObject[series] = [];
-    })
-
-    csv.forEach(function(row){
-      dataObject[row[seriesHeader]].push(row[valueHeader]);
-    })
-
-    var data = d3.values(dataObject);
+    // Transform csv data
+    var data = transformCSV(csv, uniqueSeries);
     var n = data[0].length; // number of values assuming each series has equal # of values.
 
     // set scales for x and y positions, and area size.
@@ -93,5 +81,29 @@ path {
         .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
         .style("fill", function(d, i) { return color(i); })
         .attr("d", area);
+
+    function findUniqueSeries(csv){
+        var uniqueSeries = d3.set(csv.map(function(row){
+            return row[seriesHeader];
+        })).values();
+        
+        return uniqueSeries;
+    }
+
+    function transformCSV(csv, uniqueSeries){
+        // Get a unique list of series.
+        // Transform csv data into array of arrays.
+        var dataObject = {};
+        
+        uniqueSeries.forEach(function(series){
+          dataObject[series] = [];
+        })
+
+        csv.forEach(function(row){
+          dataObject[row[seriesHeader]].push(row[valueHeader]);
+        })
+
+        return d3.values(dataObject);
+    }
   }
 </script>

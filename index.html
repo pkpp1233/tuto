@@ -9,91 +9,80 @@ path {
 
 </style>
 <body>
+<!-- Blockspring Boilerplate CSS -->
+<link rel="stylesheet" href="//www.graf.ly/graph_templates/boilerplate.css">
+
+<!-- Blockspring Boilerplate JS -->
+<script src="//www.graf.ly/graph_templates/boilerplate.js"></script>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
-  var width = 960,
-      height = 500;
+  Block.ready(renderStream)
 
-  // Generate random data into five arrays.
-  var csv = 
-    [
-      {value: 10, series: "one"},
-      {value: 20, series: "one"},
-      {value: 90, series: "one"},
-      {value: 30, series: "one"},
-      {value: 90, series: "one"},
-      {value: 50, series: "one"},
-      {value: 10, series: "one"},
-      {value: 40, series: "one"},
-      {value: 10, series: "one"},
-      {value: 30, series: "one"},
-      {value: 50, series: "one"},
-      {value: 20, series: "one"},
-      {value: 30, series: "one"},
-      {value: 40, series: "two"},
-      {value: 30, series: "two"},
-      {value: 10, series: "two"},
-      {value: 20, series: "two"},
-      {value: 30, series: "two"},
-      {value: 50, series: "two"},
-      {value: 30, series: "two"},
-      {value: 90, series: "two"},
-      {value: 30, series: "two"},
-      {value: 20, series: "two"},
-      {value: 60, series: "two"},
-      {value: 80, series: "two"},
-      {value: 75, series: "two"},
-    ]
+  function renderStream(){
+    var width = $(document).width(),
+          height = $(document).height();
 
-  var valueHeader = "value";
-  var seriesHeader = "series";
-  var uniqueSeries = ["one", "two"];
+    // Update 1: Get CSV data from BlockSpring API (vars.csv.data)
+    var csv = Block.vars.csv.data;
 
-  var m = uniqueSeries.length; // number of series
+    // Update 2: Get headers from BlockSpring API (vars.csv.columnRoleMap)
+    var valueHeader = Block.vars.csv.columnRoleMap.value[0];
+    var seriesHeader = Block.vars.csv.columnRoleMap.series;
 
-  var dataObject = {};
-  
-  uniqueSeries.forEach(function(series){
-    dataObject[series] = [];
-  })
+    // Update 3: Get unique values from BlockSpring API (vars.csv.columnMetaData)
+    var uniqueSeries = d3.keys(Block.vars.csv.columnMetaData[seriesHeader].reverseFormatLibrary);
+    
+    var m = uniqueSeries.length; // number of series
 
-  csv.forEach(function(row){
-    dataObject[row[seriesHeader]].push(row[valueHeader]);
-  })
+    // Transform csv data into array of arrays.
+    var dataObject = {};
+    
+    uniqueSeries.forEach(function(series){
+      dataObject[series] = [];
+    })
 
-  var data = d3.values(dataObject);
+    csv.forEach(function(row){
+      dataObject[row[seriesHeader]].push(row[valueHeader]);
+    })
 
-  var n = data[0].length; // number of values assuming each series has equal # of values.
+    var data = d3.values(dataObject);
+    var n = data[0].length; // number of values assuming each series has equal # of values.
 
-  var x = d3.scale.linear()
-      .domain([0, n - 1])
-      .range([0, width]);
+    // set scales for x and y positions, and area size.
+    var x = d3.scale.linear()
+        .domain([0, n - 1])
+        .range([0, width]);
 
-  var y = d3.scale.ordinal()
-      .domain(d3.range(m))
-      .rangePoints([0, height], 1);
+    var y = d3.scale.ordinal()
+        .domain(d3.range(m))
+        .rangePoints([0, height], 1);
 
-  var z = d3.scale.linear()
-      .domain(d3.extent(csv, function(d){ return d.value; }))
-      .range([0, height / (2*m)]);
+    var z = d3.scale.linear()
+        .domain(d3.extent(csv, function(d){ return d[valueHeader]; }))
+        .range([0, height / (2*m)]);
 
-  var color = d3.scale.ordinal()
-      .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
+    // set scales for color.
+    var color = d3.scale.ordinal()
+        .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
 
-  var area = d3.svg.area()
-      .interpolate("basis")
-      .x(function(d, i) { return x(i); })
-      .y0(function(d) { return -z(d); })
-      .y1(function(d) { return z(d); });
+    // instantiate area function.
+    var area = d3.svg.area()
+        .interpolate("basis")
+        .x(function(d, i) { return x(i); })
+        .y0(function(d) { return -z(d); })
+        .y1(function(d) { return z(d); });
 
-  var svg = d3.select("body").append("svg")
-      .attr("width", width)
-      .attr("height", height);
+    // add svg to dom.
+    var svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
 
-  svg.selectAll("path")
-      .data(data)
-    .enter().append("path")
-      .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
-      .style("fill", function(d, i) { return color(i); })
-      .attr("d", area);
+    // add area plots to dom.
+    svg.selectAll("path")
+        .data(data)
+      .enter().append("path")
+        .attr("transform", function(d, i) { return "translate(0," + y(i) + ")"; })
+        .style("fill", function(d, i) { return color(i); })
+        .attr("d", area);
+  }
 </script>

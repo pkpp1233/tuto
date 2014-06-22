@@ -9,6 +9,8 @@ path {
 
 </style>
 <body>
+    <div id="dropdowns"></div>
+    <div id="chart"></div>
 <!-- Blockspring Boilerplate CSS -->
 <link rel="stylesheet" href="//www.graf.ly/graph_templates/boilerplate.css">
 
@@ -19,8 +21,14 @@ path {
   Block.ready(renderStream)
 
   function renderStream(){
+
+    $("#chart").empty();
     var width = $(document).width(),
-          height = $(document).height();
+      height = $(document).height();
+
+    if (Block.vars.csv.columnRoleMap.grafly_dropdowns.length != 0){
+        height = height - 50;
+      }
 
     // Update 1: Get CSV data from BlockSpring API (vars.csv.data)
     var csv = Block.vars.csv.data;
@@ -29,9 +37,10 @@ path {
     var valueHeader = Block.vars.csv.columnRoleMap.value[0];
     var seriesHeader = Block.vars.csv.columnRoleMap.series;
 
-    // Update 3: Get unique values from BlockSpring API (vars.csv.columnMetaData)
-    var uniqueSeries = d3.keys(Block.vars.csv.columnMetaData[seriesHeader].reverseFormatLibrary);
-    
+    // Get a unique list of series.
+    var uniqueSeries = d3.set(csv.map(function(row){
+        return row[seriesHeader];
+    })).values();
     var m = uniqueSeries.length; // number of series
 
     // Transform csv data into array of arrays.
@@ -63,7 +72,7 @@ path {
 
     // set scales for color.
     var color = d3.scale.ordinal()
-        .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"]);
+        .range(Block.vars.colors);
 
     // instantiate area function.
     var area = d3.svg.area()
@@ -73,7 +82,7 @@ path {
         .y1(function(d) { return z(d); });
 
     // add svg to dom.
-    var svg = d3.select("body").append("svg")
+    var svg = d3.select("#chart").append("svg")
         .attr("width", width)
         .attr("height", height);
 

@@ -1,0 +1,30 @@
+{
+  "appearance": {
+      },
+  "roles": {
+    "value": {
+      "allows_multiple": false,
+      "required": true,
+      "types": [
+        "number"
+      ],
+      "sample_columns": [
+        "clicks"
+      ],
+      "description": "Creates the stream."
+      },
+    "series": {
+      "allows_multiple": false,
+      "required": true,
+      "types": [
+        "string",
+        "date",
+        "number"
+      ],
+      "sample_columns": [
+        "subject"
+      ],
+      "description": "Creates multiple streams."
+    }
+  }
+}
